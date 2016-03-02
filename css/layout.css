@@ -1,0 +1,32 @@
+body{
+	font-size:20px;
+}
+input{
+	min-width: 150px;
+	min-height:50px;
+}
+input{
+	font-size:25pt;
+}
+table,th,td{
+	border:1px solid black;
+}
+.Features{
+	column-span: 10;
+}
+@media screen and (min-width: 768px){
+	.password{
+		margin-left:31px;
+	}
+	body{
+		font-size:15pt;
+	}
+	.submit{
+		font-size:10pt;
+	}
+	input{
+	font-size:15px;
+	min-width:50px;
+	min-height:25px;
+	}
+}
