@@ -1,4 +1,4 @@
-<h2>Weet U zeker dat u uw acount wil verwijderen?</h2>
+<h2>weet u zeker dat u deze kamer wil verwijderen?</h2>
 	<form method="post" action="#">
 		<input type="hidden" value="delete" name="delete">
 		<input type="submit" value="Ja" class="submit">

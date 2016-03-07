@@ -1,22 +1,48 @@
 body{
-	font-size:20px;
+	font-variant: normal;
+	font-weight: normal;
+	font-family:Times new roman;
 }
 input{
 	min-width: 150px;
 	min-height:50px;
-}
-input{
 	font-size:25pt;
+}
+.chekbox{
+	font-size:15px;
+	min-width:50px;
+	min-height:25px;
 }
 table,th,td{
 	border:1px solid black;
 }
-.Features{
-	column-span: 10;
+.block{
+	display:block;
+	margin:5px;
+}
+.container{
+	width:50%;
+}
+table{
+	margin-bottom:10px;
+}
+td,tr,table{
+	max-width:25%; 
+	word-wrap:break-word;
+}
+#amount{
+	width:50px;
+}
+@media screen and (min-width: 743px){
+	.float{
+		position: relative;
+		top:-175px;
+		left:250px;
+	}
 }
 @media screen and (min-width: 768px){
 	.password{
-		margin-left:31px;
+		margin-right:31px;
 	}
 	body{
 		font-size:15pt;
@@ -25,8 +51,11 @@ table,th,td{
 		font-size:10pt;
 	}
 	input{
-	font-size:15px;
-	min-width:50px;
-	min-height:25px;
+		font-size:15px;
+		min-width:50px;
+		min-height:25px;
+	}
+	input{
+		display:inline-block;
 	}
 }

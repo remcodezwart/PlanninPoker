@@ -6,8 +6,8 @@
 		<label>Gebruikersnaam:</label>
 		<input type="text" name="user" required="true">
 		<br>
-		<label>Wachtwoord:</label>
-		<input type="password" name="password" class="password" required="true">
+		<label class="password">Wachtwoord:</label>
+		<input type="password" name="password"  required="true">
 		<br>
 		<input type="submit" value="Versturen" class="submit">
 	</form>
