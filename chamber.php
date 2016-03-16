@@ -1,13 +1,16 @@
 <?php	
 		require "logic/logic.php";
 	if (LoginCHek($conn)){
-		$chamber = UserChamber($conn);
+		if (isset($_POST['subject'])) {
+			UpdateChamber($pdo);
+		}
+		$chamber = UserChamber($conn,$pdo);
 		require "templates/header.php";
 		require "templates/chamber.php";
 		require "templates/footer.php";
-	}else{
+	}
+	else{
 		header('Location: index.php');
 	}
-
 
 ?>

@@ -26,8 +26,10 @@ table,th,td{
 table{
 	margin-bottom:10px;
 }
+td{
+	max-width: 200px;
+}
 td,tr,table{
-	max-width:25%; 
 	word-wrap:break-word;
 }
 #amount{
@@ -35,8 +37,9 @@ td,tr,table{
 }
 @media screen and (min-width: 743px){
 	.float{
+		display:inline;
 		position: relative;
-		top:-175px;
+		top:-205px;
 		left:250px;
 	}
 }

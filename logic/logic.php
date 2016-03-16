@@ -18,7 +18,8 @@
 		header('Location: index.php');
 		}
 	}
-		function login($conn,$user,$password){
+	function login($conn,$user,$password)
+	{
 		$stmt = $conn->prepare("SELECT * FROM users WHERE name=?"); 
 		$stmt->bind_param("s", $user);
 		$stmt->execute();
@@ -37,10 +38,11 @@
 		}
 		return true;
 	}
-	function setSession($user,$conn,$login){
+	function setSession($user,$conn,$login)
+	{
 		$token = (rand(1,9999999));
 		$token = (string)$token;
-		$expiring = time() + 600;
+		$expiring = time() + 1800 ;//600
 		setcookie("Token", $token, $expiring);
 		setcookie("User", $user, $expiring);
 		$stmt = $conn->prepare("UPDATE users SET  token=?, expiry=? WHERE name=? ");
@@ -50,14 +52,15 @@
 			header('Location: user.php');
 		}
 	}
-	function LoginCHek($conn){
+	function LoginCHek($conn)
+	{
 		$query = "SELECT * FROM users ";
 		$result = $conn->query($query);
 		$Chek = $result->fetch_all(MYSQLI_ASSOC);
-		if(count($_COOKIE) <= 0){
+		if (count($_COOKIE) <= 0) {
 			return false;
 		}
-		if(!isset($_COOKIE["User"])){
+		if (!isset($_COOKIE["User"])) {
 			return false;
 		}
 		if (!isset($_COOKIE["Token"])) {
@@ -74,7 +77,8 @@
 			}
 		}
 	}
-	function delete($conn){
+	function delete($conn)
+	{
 		$user = $_COOKIE["User"];
 		$Delete = "Ja";
 		$zero = 0;
@@ -83,16 +87,18 @@
 		$stmt->execute();
 		header('Location: index.php');
 	}
-	function GetChambers($conn){
+	function GetChambers($conn)
+	{
 		$query = "SELECT * FROM chambers ";
 		$result = $conn->query($query);
 		$Chambers = $result->fetch_all(MYSQLI_ASSOC);
 		return $Chambers;
 	}
-	function createChamber($conn){
+	function createChamber($conn)
+	{
 		if ($_POST['ChamberName'] == null || $_POST['Onderwerp'] == null || $_POST['feature1'] == null) {
 			echo "<p>De eerste 3 velden moeten ingevuld zijn.</p>";
-		}else{
+		} else {
 			$user = $_COOKIE["User"];
 			$name = $_POST['ChamberName'];
 			$subject = $_POST['Onderwerp'];
@@ -108,7 +114,7 @@
 			$stmt->execute();
 			$stmt = $conn->prepare("INSERT INTO features (feature,chamber_id) VALUES(?,?)");
 			$last_id = $conn->insert_id;
-		for($result = 0;$result <= 6; $result++)
+		for ($result = 0;$result <= 6; $result++)
 			{
 				if ($features[$result] != null) {
 					$stmt->bind_param("ss", $features[$result],$last_id);
@@ -143,7 +149,7 @@
 			header('Location: user.php');
 		}
 	}
-	function UserChamber($conn)
+	function UserChamber($conn,$pdo)
 	{
 		if (isset($_GET['chamber'])) {
 			$id = $_GET['chamber'];
@@ -158,10 +164,30 @@
 		$stmt->execute();
 		$result = $stmt->get_result();
 		$User = $result->fetch_all(MYSQLI_ASSOC);
-		foreach($User as $UserId){
-			$stmt = $conn->prepare("INSERT INTO chamberusers (users_id,chambers_id) VALUES(?,?)");
-			$stmt->bind_param("ss", $UserId['id'],$id);
-			$stmt->execute();
+		foreach($User as $user){
+			$userid = $user['id'];
+		}
+
+		$stmt = $pdo->prepare("SELECT * FROM chamberusers WHERE chambers_id=:id AND users_id=:chamberId"); 
+		$stmt->bindParam(':id',$id,PDO::PARAM_INT);      
+		$stmt->bindParam(':chamberId',$userid,PDO::PARAM_INT);      
+		$stmt->execute();
+		$Chambers = $stmt->fetchAll();
+
+		$now = time();
+		if ($Chambers != null) {
+				$stmt = $pdo->prepare("UPDATE chamberusers SET 	expiry=:expiry WHERE users_id=:user");
+				$stmt->bindParam(':expiry',$now,PDO::PARAM_INT);      
+				$stmt->bindParam(':user',$userid,PDO::PARAM_INT);
+				$stmt->execute();
+		}else{
+			foreach($User as $UserId){
+				$stmt = $pdo->prepare("INSERT INTO chamberusers (users_id,chambers_id,expiry) VALUES (:id,:chamberId,:expiry);");
+				$stmt->bindParam(':id',$userid,PDO::PARAM_INT);      
+				$stmt->bindParam(':chamberId',$id,PDO::PARAM_INT);      
+				$stmt->bindParam(':expiry',$now,PDO::PARAM_INT);      
+				$stmt->execute();
+			}
 		}
 		$stmt = $conn->prepare("SELECT features.feature, features.chamber_id, chambers.id, chambers.Name, chambers.subject, chambers.owner FROM chambers INNER JOIN features ON chambers.id=features.chamber_id WHERE chambers.id=?");
 		$stmt->bind_param("s", $id);
@@ -173,6 +199,60 @@
 		}
 		else{
 			header('location:user.php');
+		}
+	}
+	function UpdateChamber($pdo)
+	{
+		$idChamber = $_GET['chamber'];
+		$user = $_COOKIE['User'];
+
+		$stmt = $pdo->prepare("SELECT * FROM chambers WHERE id=:id"); 
+		$stmt->bindParam(':id',$idChamber,PDO::PARAM_INT);      
+		$stmt->execute();
+		$Chambers = $stmt->fetchAll();
+
+		foreach ($Chambers as $chek) {
+			$owner = $chek['owner'];
+		}
+		if ($Chambers != null && $user == $owner) {
+			$stmt = null;
+			$stmt = $pdo->prepare("UPDATE chambers SET subject=:subject  WHERE id=:id");
+			$stmt->bindParam(':subject', $_POST['subject'], PDO::PARAM_STR, 12);       
+			$stmt->bindParam(':id', $idChamber, PDO::PARAM_INT); 
+			$stmt->execute(); 
+		}
+	}
+	function Answer($pdo)
+	{
+		$answer = $_POST['answer'];
+		$Chamberid = $_POST['chamber'];
+		$user = $_COOKIE['User'];
+
+		$stmt = $pdo->prepare("SELECT * FROM users WHERE name=:name");
+		$stmt->bindParam(':name', $user, PDO::PARAM_STR);       
+		$stmt->execute(); 
+		$answers = $stmt->fetchAll();
+		foreach($User as $user){
+			$userid = $	$answers['id'];
+		}
+
+		$stmt = $pdo->prepare("SELECT * FROM answer WHERE users_id=:id AND WHERE feature_id=:featureid"); 
+		$stmt->bindParam(':id',$userid,PDO::PARAM_INT);      
+		$stmt->bindParam(':featureid',$featureid,PDO::PARAM_INT);      
+		$stmt->execute();
+		$answers = $stmt->fetchAll();
+
+		if ($answers != null) {
+			$stmt = $pdo->prepare("UPDATE answer SET answer=:answer WHERE users_id=:userid"); 
+			$stmt->bindParam(':answer',$answer,PDO::PARAM_STR);      
+			$stmt->bindParam(':userid',$userid,PDO::PARAM_INT);      
+			$stmt->execute();
+		}else{
+			$stmt = $pdo->prepare("INSERT INTO (users_id,feature_id,answer ) VALUES (:user,:featureid,:answer)"); 
+			$stmt->bindParam(':user',$userid,PDO::PARAM_INT);  
+			$stmt->bindParam(':featureid',$featureid,PDO::PARAM_INT);      
+			$stmt->bindParam(':answer',$answer,PDO::PARAM_STR);          
+			$stmt->execute();
 		}
 	}
 ?>
